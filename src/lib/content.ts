@@ -51,6 +51,7 @@ export const clients = [
   { name: "Sharif Oxygen", slug: "sharif-oxygen", image: "/images/clients/sharif-oxygen.pdf.webp" },
   { name: "Rangoli Kurta", slug: "rangoli-kurta", image: "/images/clients/rangoli-kurta.webp" },
   { name: "The Cubicle", slug: "the-cubicle", image: "/images/clients/the-cubicle.png" },
+  { name: "Messi Groups", slug: "messi-groups", image: "/images/clients/messi-groups.png" },
 ];
 
 export const deliverySteps = [
