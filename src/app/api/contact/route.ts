@@ -39,6 +39,10 @@ function sameOrigin(request: NextRequest) {
     const originUrl = new URL(origin);
     const siteOrigin = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://intellisense.cloud").origin;
     const allowed = new Set<string>([siteOrigin]);
+    // The request URL is the authoritative host for this deployment. This
+    // covers Vercel deployment aliases even when its runtime host variables
+    // are unavailable or differ from the alias shown in the browser.
+    allowed.add(new URL(request.url).origin);
     if (siteOrigin === "https://intellisense.cloud") allowed.add("https://www.intellisense.cloud");
     if (siteOrigin === "https://www.intellisense.cloud") allowed.add("https://intellisense.cloud");
     // Vercel Preview URLs are generated per deployment. NODE_ENV is still

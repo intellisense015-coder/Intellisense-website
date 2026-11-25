@@ -124,10 +124,6 @@ async function rateLimit(email: string, limiter: RateLimiter) {
   return result.success;
 }
 
-function allowedOrigin(request: Request, expectedOrigin: string) {
-  return request.headers.get("origin") === expectedOrigin;
-}
-
 const worker = {
   async fetch(request: Request, env: Env) {
     const origin = request.headers.get("origin") || undefined;
@@ -136,7 +132,9 @@ const worker = {
 
     if (new URL(request.url).pathname !== "/contact") return respond({ error: "Not found." }, 404);
     if (request.method !== "POST") return respond({ error: "Method not allowed." }, 405);
-    if (!allowedOrigin(request, expectedOrigin)) return respond({ error: "Request could not be verified." }, 403);
+    // This endpoint is server-to-server. The shared secret is the trust
+    // boundary; requiring a browser Origin here breaks Vercel deployment
+    // aliases and provides no additional protection for a server request.
     if (!env.WORKER_SHARED_SECRET || request.headers.get("x-intellisense-worker-secret") !== env.WORKER_SHARED_SECRET) {
       return respond({ error: "Request could not be verified." }, 403);
     }
