@@ -75,6 +75,7 @@ export function ContactForm() {
       setErrors({});
       setState({ kind: "success", message: "Thanks — your message is on its way. We’ll be in touch soon." });
     } catch (error) {
+      window.turnstile?.reset();
       setState({ kind: "error", message: error instanceof Error ? error.message : "Something went wrong. Please email us instead." });
     } finally {
       setBusy(false);

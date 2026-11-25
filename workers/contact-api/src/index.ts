@@ -105,16 +105,27 @@ async function readJson(request: Request) {
 }
 
 async function verifyTurnstile(token: string, secret: string) {
-  const form = new FormData();
-  form.set("secret", secret);
-  form.set("response", token);
-  const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    body: form,
-  });
-  if (!response.ok) return false;
-  const result = await response.json() as { success?: boolean };
-  return result.success === true;
+  try {
+    const form = new FormData();
+    form.set("secret", secret);
+    form.set("response", token);
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body: form,
+    });
+    if (!response.ok) {
+      console.error("turnstile_verification_http_error", { status: response.status });
+      return false;
+    }
+    const result = await response.json() as { success?: boolean; "error-codes"?: string[] };
+    if (result.success !== true) {
+      console.error("turnstile_verification_failed", { errorCodes: result["error-codes"] || [] });
+    }
+    return result.success === true;
+  } catch (error) {
+    console.error("turnstile_verification_request_failed", { error: error instanceof Error ? error.message : "unknown" });
+    return false;
+  }
 }
 
 async function rateLimit(email: string, limiter: RateLimiter) {
