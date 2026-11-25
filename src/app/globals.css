@@ -7435,6 +7435,38 @@ body {
     }
 }
 
+/* Mobile cards stay in document flow; the section must not become a
+   horizontal carousel on touch devices. */
+@media (max-width: 760px) {
+    .industry-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+        padding-bottom: 0;
+        overflow: visible;
+        overscroll-behavior: auto;
+        scroll-snap-type: none;
+    }
+
+    .industry-card,
+    .industry-card:nth-child(4),
+    .industry-card:nth-child(5) {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+        height: clamp(292px, 78vw, 336px);
+        scroll-snap-align: none;
+    }
+}
+
+@media (min-width: 761px) and (max-width: 1050px) {
+    .industry-card,
+    .industry-card:nth-child(4),
+    .industry-card:nth-child(5) {
+        height: 280px;
+    }
+}
+
 /* Reference-matched cloud band: photographic, edge-to-edge, and visually quiet behind the copy. */
 .cloud-hero-content.section-shell {
     width: 100%;
