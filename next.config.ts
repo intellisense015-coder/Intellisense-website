@@ -12,6 +12,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // Expose Vercel's deployment environment to the client so Preview can use
+  // Cloudflare's official test Turnstile key without changing Production.
+  env: { NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV || "" },
   images: { formats: ["image/avif", "image/webp"], remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }] },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

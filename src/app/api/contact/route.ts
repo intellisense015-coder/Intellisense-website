@@ -39,12 +39,19 @@ function sameOrigin(request: NextRequest) {
     const originUrl = new URL(origin);
     const siteOrigin = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://intellisense.cloud").origin;
     const allowed = new Set<string>([siteOrigin]);
+    // The request URL is the authoritative host for this deployment. This
+    // covers Vercel deployment aliases even when its runtime host variables
+    // are unavailable or differ from the alias shown in the browser.
+    allowed.add(new URL(request.url).origin);
     if (siteOrigin === "https://intellisense.cloud") allowed.add("https://www.intellisense.cloud");
     if (siteOrigin === "https://www.intellisense.cloud") allowed.add("https://intellisense.cloud");
-    if (process.env.NODE_ENV !== "production") {
-      allowed.add("http://localhost:3000");
-      allowed.add("http://127.0.0.1:3000");
+    // Vercel Preview URLs are generated per deployment. NODE_ENV is still
+    // "production" there, so use Vercel's trusted runtime host variables.
+    for (const host of [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]) {
+      if (host) allowed.add(`https://${host}`);
     }
+    allowed.add("http://localhost:3000");
+    allowed.add("http://127.0.0.1:3000");
     return allowed.has(originUrl.origin);
   } catch {
     return false;
@@ -83,11 +90,15 @@ export async function POST(request: NextRequest) {
 
   let workerResponse: Response;
   try {
+    // The browser origin is checked above. The Worker receives one stable
+    // canonical origin so Preview deployment URLs never require a Worker
+    // redeploy or a new Turnstile hostname.
+    const workerOrigin = process.env.CONTACT_WORKER_ORIGIN || "https://intellisense.cloud";
     workerResponse = await fetch(`${workerUrl.replace(/\/$/, "")}/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Origin: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://intellisense.cloud").origin,
+        Origin: workerOrigin,
         "x-intellisense-worker-secret": workerSecret,
       },
       body: JSON.stringify({
@@ -123,8 +134,8 @@ export async function POST(request: NextRequest) {
   const from = process.env.CONTACT_FROM_EMAIL;
   const to = process.env.CONTACT_TO_EMAIL || "info@intellisense.cloud";
   if (!apiKey || !from) {
-    console.warn("contact_notification_skipped", requestId);
-    return NextResponse.json({ success: true });
+    console.error("contact_notification_not_configured", { requestId });
+    return errorResponse("Your message was saved, but email notifications are not configured for this deployment.", 503);
   }
 
   const { name, email, company, help, message } = parsed.data;
@@ -142,13 +153,17 @@ export async function POST(request: NextRequest) {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [to], reply_to: email, subject: `Website enquiry from ${name}`, text: plainMessage }),
+      body: JSON.stringify({ from, to: [to], reply_to: email, subject: `New website enquiry — ${help} | IntelliSense Cloud`, text: plainMessage }),
       cache: "no-store",
       signal: AbortSignal.timeout(8_000),
     });
-    if (!response.ok) console.warn("contact_notification_failed", requestId);
+    if (!response.ok) {
+      console.error("contact_notification_failed", { requestId, status: response.status });
+      return errorResponse("Your message was saved, but the notification email could not be sent.", 503);
+    }
   } catch {
-    console.warn("contact_notification_failed", requestId);
+    console.error("contact_notification_failed", { requestId });
+    return errorResponse("Your message was saved, but the notification email could not be sent.", 503);
   }
 
   return NextResponse.json({ success: true });
