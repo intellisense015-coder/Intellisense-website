@@ -134,8 +134,8 @@ export async function POST(request: NextRequest) {
   const from = process.env.CONTACT_FROM_EMAIL;
   const to = process.env.CONTACT_TO_EMAIL || "info@intellisense.cloud";
   if (!apiKey || !from) {
-    console.warn("contact_notification_skipped", requestId);
-    return NextResponse.json({ success: true });
+    console.error("contact_notification_not_configured", { requestId });
+    return errorResponse("Your message was saved, but email notifications are not configured for this deployment.", 503);
   }
 
   const { name, email, company, help, message } = parsed.data;
@@ -157,9 +157,13 @@ export async function POST(request: NextRequest) {
       cache: "no-store",
       signal: AbortSignal.timeout(8_000),
     });
-    if (!response.ok) console.warn("contact_notification_failed", requestId);
+    if (!response.ok) {
+      console.error("contact_notification_failed", { requestId, status: response.status });
+      return errorResponse("Your message was saved, but the notification email could not be sent.", 503);
+    }
   } catch {
-    console.warn("contact_notification_failed", requestId);
+    console.error("contact_notification_failed", { requestId });
+    return errorResponse("Your message was saved, but the notification email could not be sent.", 503);
   }
 
   return NextResponse.json({ success: true });
