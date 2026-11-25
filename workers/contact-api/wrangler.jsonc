@@ -30,7 +30,7 @@
     "preview": {
       "name": "intellisense-contact-preview",
       "vars": {
-        "ALLOWED_ORIGIN": "https://intellisense-website-kslrd7yj7-intellisense15.vercel.app"
+        "ALLOWED_ORIGIN": "https://intellisense-website-9lj2w37nm-intellisense15.vercel.app"
       },
       "ratelimits": [
         {
