@@ -29,11 +29,24 @@
   "env": {
     "preview": {
       "name": "intellisense-contact-preview",
+      "vars": {
+        "ALLOWED_ORIGIN": "https://intellisense-website-kslrd7yj7-intellisense15.vercel.app"
+      },
+      "ratelimits": [
+        {
+          "name": "RATE_LIMITER",
+          "namespace_id": "1001002",
+          "simple": {
+            "limit": 5,
+            "period": 60
+          }
+        }
+      ],
       "d1_databases": [
         {
           "binding": "DB",
           "database_name": "intellisense-contact-preview",
-          "database_id": "REPLACE_WITH_PREVIEW_DATABASE_ID",
+          "database_id": "b7275c63-1db5-49bf-af29-91a5ded2a501",
           "migrations_dir": "migrations"
         }
       ]

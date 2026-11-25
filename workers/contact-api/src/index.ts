@@ -1,6 +1,6 @@
 const MAX_BODY_BYTES = 16_000;
 const MAX_TURNSTILE_TOKEN_LENGTH = 2_048;
-const ALLOWED_ORIGIN = "https://intellisense.cloud";
+const DEFAULT_ALLOWED_ORIGIN = "https://intellisense.cloud";
 
 const HELP_AREAS = new Set([
   "custom_software",
@@ -31,6 +31,7 @@ interface RateLimiter {
 interface Env {
   DB: D1Database;
   RATE_LIMITER: RateLimiter;
+  ALLOWED_ORIGIN?: string;
   TURNSTILE_SECRET_KEY?: string;
   WORKER_SHARED_SECRET?: string;
 }
@@ -44,15 +45,15 @@ type ContactPayload = {
   turnstileToken: string;
 };
 
-function json(data: Record<string, unknown>, status: number, origin?: string) {
+function json(data: Record<string, unknown>, status: number, origin?: string, allowedOrigin = DEFAULT_ALLOWED_ORIGIN) {
   const headers = new Headers({
     "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store",
     "x-content-type-options": "nosniff",
     "referrer-policy": "no-referrer",
   });
-  if (origin === ALLOWED_ORIGIN) {
-    headers.set("access-control-allow-origin", ALLOWED_ORIGIN);
+  if (origin === allowedOrigin) {
+    headers.set("access-control-allow-origin", allowedOrigin);
     headers.set("vary", "Origin");
   }
   return new Response(JSON.stringify(data), { status, headers });
@@ -123,34 +124,36 @@ async function rateLimit(email: string, limiter: RateLimiter) {
   return result.success;
 }
 
-function allowedOrigin(request: Request) {
-  return request.headers.get("origin") === ALLOWED_ORIGIN;
+function allowedOrigin(request: Request, expectedOrigin: string) {
+  return request.headers.get("origin") === expectedOrigin;
 }
 
 const worker = {
   async fetch(request: Request, env: Env) {
     const origin = request.headers.get("origin") || undefined;
+    const expectedOrigin = env.ALLOWED_ORIGIN || DEFAULT_ALLOWED_ORIGIN;
+    const respond = (data: Record<string, unknown>, status: number) => json(data, status, origin, expectedOrigin);
 
-    if (new URL(request.url).pathname !== "/contact") return json({ error: "Not found." }, 404, origin);
-    if (request.method !== "POST") return json({ error: "Method not allowed." }, 405, origin);
-    if (!allowedOrigin(request)) return json({ error: "Request could not be verified." }, 403, origin);
+    if (new URL(request.url).pathname !== "/contact") return respond({ error: "Not found." }, 404);
+    if (request.method !== "POST") return respond({ error: "Method not allowed." }, 405);
+    if (!allowedOrigin(request, expectedOrigin)) return respond({ error: "Request could not be verified." }, 403);
     if (!env.WORKER_SHARED_SECRET || request.headers.get("x-intellisense-worker-secret") !== env.WORKER_SHARED_SECRET) {
-      return json({ error: "Request could not be verified." }, 403, origin);
+      return respond({ error: "Request could not be verified." }, 403);
     }
     if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
-      return json({ error: "Unsupported request format." }, 415, origin);
+      return respond({ error: "Unsupported request format." }, 415);
     }
 
     const parsed = parsePayload(await readJson(request));
-    if (!parsed) return json({ error: "Please check the form fields and try again." }, 400, origin);
-    if (!env.TURNSTILE_SECRET_KEY) return json({ error: "Contact service is temporarily unavailable." }, 503, origin);
+    if (!parsed) return respond({ error: "Please check the form fields and try again." }, 400);
+    if (!env.TURNSTILE_SECRET_KEY) return respond({ error: "Contact service is temporarily unavailable." }, 503);
 
     try {
       if (!(await verifyTurnstile(parsed.turnstileToken, env.TURNSTILE_SECRET_KEY))) {
-        return json({ error: "Please verify the anti-spam check and try again." }, 400, origin);
+        return respond({ error: "Please verify the anti-spam check and try again." }, 400);
       }
       if (!(await rateLimit(parsed.email, env.RATE_LIMITER))) {
-        return json({ error: "Too many requests. Please try again later." }, 429, origin);
+        return respond({ error: "Too many requests. Please try again later." }, 429);
       }
 
       const now = new Date().toISOString();
@@ -158,7 +161,7 @@ const worker = {
       const duplicate = await env.DB.prepare(
         "SELECT id FROM contact_submissions WHERE email = ? AND project_description = ? AND created_at >= ? LIMIT 1",
       ).bind(parsed.email, parsed.projectDescription, duplicateSince).all<{ id: string }>();
-      if (duplicate.results.length > 0) return json({ success: true }, 200, origin);
+      if (duplicate.results.length > 0) return respond({ success: true }, 200);
 
       const requestId = crypto.randomUUID();
       const id = crypto.randomUUID();
@@ -178,9 +181,9 @@ const worker = {
         now,
       ).run();
 
-      return json({ success: true }, 200, origin);
+      return respond({ success: true, requestId }, 200);
     } catch {
-      return json({ error: "Contact service is temporarily unavailable." }, 503, origin);
+      return respond({ error: "Contact service is temporarily unavailable." }, 503);
     }
   },
 };
