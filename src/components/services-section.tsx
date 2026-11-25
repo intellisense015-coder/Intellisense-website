@@ -21,7 +21,6 @@ export function ServicesSection() {
       <div className="systems-services-intro">
         <h2>Software systems designed around the way your business works.</h2>
         <p>From custom platforms to intelligent automation, Intellisense turns complex workflows into dependable digital products.</p>
-        <a className="systems-services-primary" href="#contact">Discuss your project</a>
       </div>
 
       <div className="systems-services-list" role="list" aria-label="Intellisense service pillars">

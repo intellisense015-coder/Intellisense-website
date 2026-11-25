@@ -10576,7 +10576,7 @@ body {
 }
 
 .systems-services-intro {
-    margin-bottom: clamp(28px, 3vw, 38px);
+    margin-bottom: clamp(24px, 2.4vw, 32px);
 }
 
 .systems-services-intro h2 {
@@ -10587,6 +10587,7 @@ body {
 .systems-services-intro p {
     font-size: 14px;
     line-height: 1.55;
+    margin-bottom: 0;
 }
 
 .systems-service-card {
@@ -10607,6 +10608,16 @@ body {
 
 .systems-service-link {
     padding-top: 16px;
+}
+
+/* Keep the transition from the Product showcase into the process section
+   compact without changing either section's content. */
+.products-section {
+    padding-bottom: clamp(28px, 3.2vw, 46px);
+}
+
+.process-section {
+    padding-top: clamp(30px, 3.4vw, 48px);
 }
 
 /* Industry cards: image-led composition on larger screens, with the same
@@ -10642,7 +10653,7 @@ body {
     }
 
     .systems-services-intro {
-        margin-bottom: 28px;
+        margin-bottom: 22px;
     }
 
     .systems-services-intro h2 {
