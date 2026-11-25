@@ -1,23 +1,100 @@
 "use client";
 
 import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
-import { products } from "@/lib/content";
+import CardFlip from "@/components/kokonutui/card-flip";
+
+type ProductStudioItem = {
+  name: string;
+  category: string;
+  image: string;
+  alt: string;
+  imageFit?: "cover" | "contain";
+  phrases: Array<{ label: string; description?: string }>;
+  back: string;
+  href?: string;
+};
+
+const productStudioItems: ProductStudioItem[] = [
+  {
+    name: "Fleet Maintenance",
+    category: "Fleet Operations",
+    image: "/images/products/fleet-maintenance-reference.png",
+    alt: "Fleet Maintenance software interface",
+    imageFit: "cover",
+    phrases: ["Service scheduling", "Vehicle health", "Repair history", "Cost visibility"].map((label) => ({ label })),
+    back: "A connected fleet operations system for managing vehicles, service schedules, repair history, maintenance costs, and operational visibility.",
+  },
+  {
+    name: "Coworking OS",
+    category: "Workspace Operations",
+    image: "/images/products/coworking-os-reference.png",
+    alt: "Coworking OS software interface",
+    imageFit: "cover",
+    phrases: ["Member operations", "Room bookings", "Visitors and access", "Invoices and payments"].map((label) => ({ label })),
+    back: "An operations platform for managing members, bookings, visitors, invoices, spaces, and daily coworking workflows.",
+    href: "/products/coworking-os",
+  },
+  {
+    name: "Solexa",
+    category: "Retail Operations",
+    image: "/images/products/solexa-logo.png",
+    alt: "Solexa ERP software interface",
+    imageFit: "contain",
+    phrases: [
+      { label: "Inventory visibility" },
+      { label: "Supplier coordination" },
+      { label: "Sales and activity" },
+      { label: "Product records" },
+      { label: "Operations management" },
+      { label: "Business reporting" },
+      { label: "Manufacturing records" },
+    ],
+    back: "A retail ERP for managing inventory, suppliers, purchases, sales, exchanges, buybacks, and reporting.",
+    href: "/products/solexa",
+  },
+  {
+    name: "AutoBiz",
+    category: "AI Business Workspace",
+    image: "/images/products/autobiz-reference.png",
+    alt: "AutoBiz automation software interface",
+    imageFit: "cover",
+    phrases: [
+      { label: "AI chat and assistants" },
+      { label: "Document intelligence" },
+      { label: "Email assistance" },
+      { label: "Image generation" },
+      { label: "Connected tools" },
+      { label: "Automation workspace" },
+    ],
+    back: "An AI-powered workspace for capturing leads, automating follow-ups, connecting workflows, and improving sales visibility.",
+    href: "/products/autobiz",
+  },
+];
+
+function ProductCardFront({ product }: { product: ProductStudioItem }) {
+  return <div className="product-flip-front-content">
+    <div className={`product-flip-image product-flip-image-${product.imageFit || "cover"}`}><Image src={product.image} alt={product.alt} fill sizes="(max-width: 760px) 88vw, 24vw" /></div>
+    <div className="product-flip-copy">
+      <span>{product.category}</span>
+      <h3>{product.name}</h3>
+      <ul>{product.phrases.map((phrase) => <li key={phrase.label}><span>{phrase.label}</span>{phrase.description ? <small>{phrase.description}</small> : null}</li>)}</ul>
+    </div>
+  </div>;
+}
 
 export function ProductShowcase() {
-  const [active, setActive] = useState(0);
-  const reduced = useReducedMotion();
-  const product = products[active];
-  return <div className="product-showcase">
-    <div className={`product-stage product-${product.accent}`}>
-      <div className="product-light product-light-a"/><div className="product-light product-light-b"/>
-      <AnimatePresence mode="wait"><motion.div className={`product-screen-main product-image-${product.accent}`} key={product.name} initial={reduced ? false : { opacity: 0, y: 12, scale: .985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={reduced ? undefined : { opacity: 0, y: -8 }} transition={{ duration: .3 }}>
-        <Image src={product.image} alt={`${product.name} product interface supplied by IntelliSense Cloud`} fill sizes="(max-width: 760px) 92vw, 52vw" priority={active === 0} />
-      </motion.div></AnimatePresence>
-    </div>
-    <div className="product-copy"><div className="product-switcher" role="tablist" aria-label="Choose a product">{products.map((item, i) => <button key={item.name} type="button" role="tab" aria-selected={active === i} aria-controls="product-panel" id={`product-tab-${i}`} onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)} onClick={() => setActive(i)}>{item.name}<span aria-hidden="true">↗</span></button>)}</div>
-      <div id="product-panel" role="tabpanel" aria-labelledby={`product-tab-${active}`} className="product-detail" aria-live="polite"><AnimatePresence mode="wait"><motion.div key={product.name} initial={reduced ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={reduced ? undefined : { opacity: 0, y: -8 }} transition={{ duration: .22 }}><h3>{product.tagline}</h3><p className="product-description">{product.description}</p><ul className="product-features">{product.features.map(feature => <li key={feature}><span aria-hidden="true">✓</span>{feature}</li>)}</ul><a className="text-link" href={product.href}>{product.action}<span aria-hidden="true">↗</span></a></motion.div></AnimatePresence></div>
+  return <div className="product-flip-experience">
+    <div className="product-flip-arc" role="region" aria-label="Intellisense products. Flick a card to reveal more information.">
+      {productStudioItems.map((item, index) => <div className={`product-flip-arc-card product-flip-arc-card-${index + 1}`} key={item.name}>
+        <CardFlip
+          axis="y"
+          label={`${item.name} product card`}
+          className={`product-flip-card${item.phrases.some((phrase) => phrase.description) ? " product-flip-card-feature-rich" : ""}`}
+          faceClassName="product-flip-face"
+          front={<ProductCardFront product={item} />}
+          back={<div className="product-flip-back-content"><span>Product note</span><h3>{item.name}</h3><p>{item.back}</p></div>}
+        />
+      </div>)}
     </div>
   </div>;
 }

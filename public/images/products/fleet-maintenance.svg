@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
+  <title id="title">Fleet Maintenance interface visual</title>
+  <desc id="desc">A restrained maintenance planning visual with vehicle records and service status.</desc>
+  <rect width="960" height="640" rx="28" fill="#eef2ff"/>
+  <rect x="42" y="42" width="876" height="556" rx="22" fill="#fff" stroke="#cfd7f5"/>
+  <rect x="72" y="76" width="180" height="22" rx="11" fill="#293aa8"/>
+  <rect x="72" y="126" width="430" height="34" rx="17" fill="#172554"/>
+  <rect x="72" y="188" width="816" height="1" fill="#dfe5fa"/>
+  <rect x="72" y="232" width="250" height="128" rx="16" fill="#f4f6ff" stroke="#dce2f8"/>
+  <rect x="350" y="232" width="250" height="128" rx="16" fill="#f4fbf8" stroke="#d5eee5"/>
+  <rect x="628" y="232" width="260" height="128" rx="16" fill="#f5f3ff" stroke="#e2ddfb"/>
+  <circle cx="112" cy="274" r="19" fill="#7084e4"/><rect x="145" y="258" width="118" height="11" rx="5" fill="#7d89aa"/><rect x="145" y="282" width="78" height="9" rx="4" fill="#c3cbe4"/>
+  <circle cx="390" cy="274" r="19" fill="#a7decf"/><rect x="423" y="258" width="132" height="11" rx="5" fill="#628e83"/><rect x="423" y="282" width="92" height="9" rx="4" fill="#c1ddd5"/>
+  <circle cx="668" cy="274" r="19" fill="#c6c8f3"/><rect x="701" y="258" width="128" height="11" rx="5" fill="#6c70aa"/><rect x="701" y="282" width="80" height="9" rx="4" fill="#d0d0ec"/>
+  <rect x="72" y="408" width="816" height="14" rx="7" fill="#e5e9f7"/><rect x="72" y="408" width="594" height="14" rx="7" fill="#5067d3"/>
+  <rect x="72" y="468" width="210" height="11" rx="5" fill="#7b87a7"/><rect x="72" y="496" width="350" height="9" rx="4" fill="#d2d8eb"/><rect x="72" y="524" width="280" height="9" rx="4" fill="#d2d8eb"/>
+</svg>

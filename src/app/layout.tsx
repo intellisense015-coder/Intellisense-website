@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
+import Script from "next/script";
 import { SiteHeader } from "@/components/site-header";
 import { WhatsAppLink } from "@/components/whatsapp-link";
 import "./globals.css";
@@ -19,6 +21,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 // The proxy issues a fresh script nonce per request, so render request-specific HTML.
 export const dynamic = "force-dynamic";
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><a className="skip-link" href="#main">Skip to content</a><SiteHeader />{children}<WhatsAppLink /></body></html>;
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const nonce = (await headers()).get("x-nonce") || undefined;
+  return <html lang="en"><body><Script nonce={nonce} src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" /><a className="skip-link" href="#main">Skip to content</a><SiteHeader />{children}<WhatsAppLink /></body></html>;
 }

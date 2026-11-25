@@ -9,7 +9,6 @@ const links = [
   ["About", "/#leadership"],
   ["Products", "/#products"],
   ["Services", "/#services"],
-  ["Industries", "/#industries"],
 ];
 
 export function SiteHeader() {

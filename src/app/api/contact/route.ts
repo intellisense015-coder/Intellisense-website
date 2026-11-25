@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -9,28 +7,30 @@ const schema = z.object({
   name: z.string().trim().min(2).max(100).regex(/^[^\r\n<>]+$/),
   email: z.string().trim().email().max(254),
   company: z.string().trim().max(120).optional().default(""),
-  service: z.string().trim().max(100).optional().default(""),
+  help: z.enum([
+    "Custom software",
+    "AI automation",
+    "RAG or knowledge systems",
+    "Web or mobile product",
+    "Business workflow improvement",
+    "Existing system improvement",
+    "Other",
+  ]),
   message: z.string().trim().min(12).max(4000),
   website: z.string().max(0).optional().default(""),
+  turnstileToken: z.string().trim().min(1).max(2048),
+  formStartedAt: z.coerce.number().int().positive(),
 });
 
-const localRequests = new Map<string, { count: number; reset: number }>();
-let redisLimiter: Ratelimit | null = null;
-
-function getLimiter() {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
-  if (!redisLimiter) {
-    redisLimiter = new Ratelimit({
-      redis: new Redis({ url, token }),
-      limiter: Ratelimit.slidingWindow(5, "1 h"),
-      analytics: false,
-      prefix: "intellisense:contact",
-    });
-  }
-  return redisLimiter;
-}
+const helpAreas = {
+  "Custom software": "custom_software",
+  "AI automation": "ai_automation",
+  "RAG or knowledge systems": "rag_knowledge_systems",
+  "Web or mobile product": "web_mobile_product",
+  "Business workflow improvement": "business_workflow_improvement",
+  "Existing system improvement": "existing_system_improvement",
+  Other: "other",
+} as const;
 
 function sameOrigin(request: NextRequest) {
   const origin = request.headers.get("origin");
@@ -50,61 +50,88 @@ function sameOrigin(request: NextRequest) {
   }
 }
 
-async function checkRateLimit(request: NextRequest) {
-  const ip = request.headers.get("x-vercel-forwarded-for")
-    || request.headers.get("x-real-ip")
-    || request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim()
-    || "unknown";
-  const limiter = getLimiter();
-  if (limiter) {
-    const result = await limiter.limit(ip);
-    return result.success;
-  }
-  if (process.env.NODE_ENV === "production") throw new Error("Production rate limiting is not configured.");
-  const now = Date.now();
-  const current = localRequests.get(ip);
-  if (!current || current.reset < now) {
-    localRequests.set(ip, { count: 1, reset: now + 60 * 60 * 1000 });
-    return true;
-  }
-  current.count += 1;
-  return current.count <= 5;
+function errorResponse(error: string, status: number) {
+  return NextResponse.json({ error }, { status, headers: { "cache-control": "no-store" } });
 }
 
 export async function POST(request: NextRequest) {
-  if (!sameOrigin(request)) return NextResponse.json({ error: "Request could not be verified." }, { status: 403 });
+  if (!sameOrigin(request)) return errorResponse("Request could not be verified.", 403);
   if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
-    return NextResponse.json({ error: "Unsupported request format." }, { status: 415 });
+    return errorResponse("Unsupported request format.", 415);
   }
+
   let raw: unknown;
   try {
     const text = await request.text();
-    if (Buffer.byteLength(text, "utf8") > 16_000) return NextResponse.json({ error: "Message is too large." }, { status: 413 });
+    if (Buffer.byteLength(text, "utf8") > 16_000) return errorResponse("Message is too large.", 413);
     raw = JSON.parse(text);
-  } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
-  const parsed = schema.safeParse(raw);
-  if (!parsed.success) return NextResponse.json({ error: "Please check the form fields and try again." }, { status: 400 });
-  if (parsed.data.website) return NextResponse.json({ success: true });
-
-  try {
-    if (!(await checkRateLimit(request))) {
-      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
-    }
   } catch {
-    return NextResponse.json({ error: "Contact service is temporarily unavailable." }, { status: 503 });
+    return errorResponse("Invalid request.", 400);
   }
 
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) return errorResponse("Please check the form fields and try again.", 400);
+  if (parsed.data.website) return NextResponse.json({ success: true });
+  if (Date.now() - parsed.data.formStartedAt < 700) {
+    return errorResponse("Please take a moment to review your message before sending.", 400);
+  }
+
+  const workerUrl = process.env.CONTACT_WORKER_URL;
+  const workerSecret = process.env.WORKER_SHARED_SECRET;
+  if (!workerUrl || !workerSecret) return errorResponse("Contact service is temporarily unavailable.", 503);
+
+  let workerResponse: Response;
+  try {
+    workerResponse = await fetch(`${workerUrl.replace(/\/$/, "")}/contact`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://intellisense.cloud").origin,
+        "x-intellisense-worker-secret": workerSecret,
+      },
+      body: JSON.stringify({
+        name: parsed.data.name,
+        email: parsed.data.email,
+        company: parsed.data.company,
+        helpArea: helpAreas[parsed.data.help],
+        projectDescription: parsed.data.message,
+        turnstileToken: parsed.data.turnstileToken,
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch {
+    return errorResponse("Contact service is temporarily unavailable.", 503);
+  }
+
+  let workerResult: { success?: boolean; error?: string; requestId?: string } = {};
+  try {
+    workerResult = await workerResponse.json();
+  } catch {
+    // Keep malformed upstream responses generic.
+  }
+  if (!workerResponse.ok) {
+    const message = typeof workerResult.error === "string" && workerResult.error.length <= 160
+      ? workerResult.error
+      : "We could not save your message. Please try again.";
+    return errorResponse(message, workerResponse.status >= 500 ? 503 : workerResponse.status);
+  }
+
+  const requestId = workerResult.requestId || "unknown";
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.CONTACT_FROM_EMAIL;
   const to = process.env.CONTACT_TO_EMAIL || "info@intellisense.cloud";
-  if (!apiKey || !from) return NextResponse.json({ error: "Contact service is not configured yet. Please email info@intellisense.cloud." }, { status: 503 });
+  if (!apiKey || !from) {
+    console.warn("contact_notification_skipped", requestId);
+    return NextResponse.json({ success: true });
+  }
 
-  const { name, email, company, service, message } = parsed.data;
+  const { name, email, company, help, message } = parsed.data;
   const plainMessage = [
     `Name: ${name}`,
     `Email: ${email}`,
     company ? `Company: ${company}` : "",
-    service ? `Interested in: ${service}` : "",
+    `Interested in: ${help}`,
     "",
     "Project details:",
     message,
@@ -118,9 +145,10 @@ export async function POST(request: NextRequest) {
       cache: "no-store",
       signal: AbortSignal.timeout(8_000),
     });
-    if (!response.ok) return NextResponse.json({ error: "We could not send your message. Please email info@intellisense.cloud." }, { status: 502 });
-    return NextResponse.json({ success: true });
+    if (!response.ok) console.warn("contact_notification_failed", requestId);
   } catch {
-    return NextResponse.json({ error: "Contact service is temporarily unavailable. Please email info@intellisense.cloud." }, { status: 502 });
+    console.warn("contact_notification_failed", requestId);
   }
+
+  return NextResponse.json({ success: true });
 }

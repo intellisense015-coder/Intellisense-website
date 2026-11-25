@@ -35,14 +35,20 @@ export const products = [
     features: ["Inventory and product records", "Supplier and purchasing workflows", "Sales and operations views", "Business reporting"],
     image: "/images/products/solexa-cover.jpg", accent: "cyan", action: "Explore Solexa", href: "/products/solexa",
   },
+  {
+    slug: "coworking-os", name: "Coworking OS", category: "Workspace operations",
+    tagline: "A calmer operating layer for flexible workspaces.",
+    description: "Coworking OS is a placeholder product concept for connecting member operations, bookings, and the daily work of running a flexible workspace. The dedicated page is ready for the fuller product details to be added later.",
+    features: ["Member operations", "Booking coordination", "Workspace availability", "Daily operating workflows"],
+    image: "/images/products/coworking-os-placeholder.svg", accent: "violet", action: "Explore Coworking OS", href: "/products/coworking-os",
+  },
 ];
 
 export const industries = [
-  { label: "Clothing & retail", description: "Connect product, stock, sales, and fulfilment workflows so teams can act on current information.", outcome: "Better visibility from merchandising to operations.", image: "https://images.unsplash.com/photo-1768758533474-5cd148638a98?auto=format&fit=crop&w=1200&q=82", visual: "retail", credit: "Luca, Unsplash — clothing store interior" },
-  { label: "Legal services", description: "Digitize document-heavy work and create clearer client, matter, and review workflows.", outcome: "More organized case and client operations.", image: "https://images.unsplash.com/photo-1749648329134-75ed14f7dae5?auto=format&fit=crop&w=1200&q=82", visual: "legal", credit: "Vinícius Marçall, Unsplash — professional working at desk" },
-  { label: "Industrial gas & chemical production", description: "Support operational teams with connected records, dependable reporting, and practical automation.", outcome: "More connected operational information.", image: "https://images.unsplash.com/photo-1768128834332-7d3479c8d634?auto=format&fit=crop&w=1200&q=82", visual: "industrial", credit: "waa towaw, Unsplash — industrial complex" },
-  { label: "E-commerce", description: "Bring commerce, customer journeys, and backend operations into a cohesive digital experience.", outcome: "Smoother workflows across the customer lifecycle.", image: "https://images.unsplash.com/photo-1769355104335-acef3aa4c9b6?auto=format&fit=crop&w=1200&q=82", visual: "commerce", credit: "Guilherme Mendes, Unsplash — ecommerce packaging and warehouse" },
-  { label: "Commercial real estate", description: "Give property teams a more useful view of leads, assets, lease information, and portfolio activity.", outcome: "Clearer portfolio and leasing workflows.", image: "https://images.unsplash.com/photo-1762456415242-155132cd7ff4?auto=format&fit=crop&w=1200&q=82", visual: "property", credit: "Richard Williams, Unsplash — commercial office architecture" },
+  { label: "Retail & e-commerce", description: "Digital systems for products, orders, inventory, and customer journeys.", image: "https://images.unsplash.com/photo-1768758533474-5cd148638a98?auto=format&fit=crop&w=1200&q=82", visual: "retail" },
+  { label: "Legal services", description: "Clearer workflows for client information, documents, and case operations.", image: "https://images.unsplash.com/photo-1749648329134-75ed14f7dae5?auto=format&fit=crop&w=1200&q=82", visual: "legal" },
+  { label: "Industrial operations", description: "Connected tools for records, reporting, maintenance, and daily execution.", image: "https://images.unsplash.com/photo-1768128834332-7d3479c8d634?auto=format&fit=crop&w=1200&q=82", visual: "industrial" },
+  { label: "Commercial real estate", description: "Better visibility across leads, properties, leases, and portfolio activity.", image: "https://images.unsplash.com/photo-1762456415242-155132cd7ff4?auto=format&fit=crop&w=1200&q=82", visual: "property" },
 ];
 
 export const clients = [
@@ -52,18 +58,12 @@ export const clients = [
   { name: "Rangoli Kurta", slug: "rangoli-kurta", image: "/images/clients/rangoli-kurta.webp" },
   { name: "The Cubicle", slug: "the-cubicle", image: "/images/clients/the-cubicle.png" },
   { name: "Messi Groups", slug: "messi-groups", image: "/images/clients/messi-groups.png" },
+  { name: "ZHK Mobiles", slug: "zhk-mobiles", image: "/images/clients/zhk-mobiles.png" }
 ];
 
 export const deliverySteps = [
-  { number: "01", title: "Strategic Discovery & Architecture", description: "Align on business goals, users, constraints, and a technical direction before committing to a build." },
-  { number: "02", title: "Agile Engineering & AI Integration", description: "Build in clear increments, bring in AI where it adds value, and keep decisions visible as the product takes shape." },
-  { number: "03", title: "Quality Assurance & Deployment", description: "Validate the experience, security, and reliability, then prepare a measured release into production." },
-  { number: "04", title: "Continuous Optimization & Scaling", description: "Use real-world feedback to improve performance, extend workflows, and scale the product responsibly." },
-];
-
-export const proofPoints = [
-  { value: "99%", title: "Customer Satisfaction", description: "A relationship-first approach to delivery and support." },
-  { value: "24/7", title: "Enterprise Support", description: "Support coverage for business-critical systems." },
-  { value: "10x", title: "Deployment Velocity", description: "Automation and focused delivery to help teams move faster." },
-  { value: "Zero", title: "Downtime Architecture", description: "Resilient design practices built around service continuity." },
+  { number: "01", title: "Strategic Discovery & Architecture", description: "Align goals and technical direction." },
+  { number: "02", title: "Agile Engineering & AI Integration", description: "Build in clear, visible increments." },
+  { number: "03", title: "Quality Assurance & Deployment", description: "Validate, secure, and release with confidence." },
+  { number: "04", title: "Continuous Optimization & Scaling", description: "Learn, improve, and scale responsibly." },
 ];

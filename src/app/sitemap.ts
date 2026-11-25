@@ -6,8 +6,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: base, lastModified: new Date(), changeFrequency: "monthly", priority: 1 },
     { url: `${base}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${base}/products`, changeFrequency: "monthly", priority: 0.8 },
     ...capabilities.map(({ slug }) => ({ url: `${base}/services/${slug}`, changeFrequency: "monthly" as const, priority: 0.7 })),
     { url: `${base}/products/autobiz`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/products/solexa`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/products/coworking-os`, changeFrequency: "monthly", priority: 0.7 },
   ];
 }

@@ -1,0 +1,53 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "account_id": "b9a8184895338240fade464c198f9b52",
+  "name": "intellisense-contact-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-24",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGIN": "https://intellisense.cloud"
+  },
+  "ratelimits": [
+    {
+      "name": "RATE_LIMITER",
+      "namespace_id": "1001001",
+      "simple": {
+        "limit": 5,
+        "period": 60
+      }
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "intellisense_cloud-website",
+      "database_id": "3671a127-55c4-4b4f-a6a5-e8b64bc66413",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "env": {
+    "preview": {
+      "name": "intellisense-contact-preview",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "intellisense-contact-preview",
+          "database_id": "REPLACE_WITH_PREVIEW_DATABASE_ID",
+          "migrations_dir": "migrations"
+        }
+      ]
+    },
+    "production": {
+      "name": "intellisense-contact-production",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "intellisense-contact-production",
+          "database_id": "REPLACE_WITH_PRODUCTION_DATABASE_ID",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}
