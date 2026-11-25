@@ -10623,7 +10623,7 @@ body {
 /* Industry cards: image-led composition on larger screens, with the same
    card treatment and horizontal mobile scroller preserved. */
 .industry-image {
-    flex-basis: 65%;
+    flex-basis: 60%;
     height: auto;
     min-height: 0;
 }
@@ -10671,7 +10671,7 @@ body {
     }
 
     .industry-image {
-        flex-basis: 62%;
+        flex-basis: 60%;
     }
 
     .industry-content {

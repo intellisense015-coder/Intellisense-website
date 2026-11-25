@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [to], reply_to: email, subject: `Website enquiry from ${name}`, text: plainMessage }),
+      body: JSON.stringify({ from, to: [to], reply_to: email, subject: `New website enquiry — ${help} | IntelliSense Cloud`, text: plainMessage }),
       cache: "no-store",
       signal: AbortSignal.timeout(8_000),
     });
