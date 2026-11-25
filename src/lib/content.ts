@@ -46,9 +46,9 @@ export const products = [
 
 export const industries = [
   { label: "Retail & e-commerce", description: "Digital systems for products, orders, inventory, and customer journeys.", image: "https://images.unsplash.com/photo-1768758533474-5cd148638a98?auto=format&fit=crop&w=1200&q=82", visual: "retail" },
-  { label: "Legal services", description: "Clearer workflows for client information, documents, and case operations.", image: "https://images.unsplash.com/photo-1749648329134-75ed14f7dae5?auto=format&fit=crop&w=1200&q=82", visual: "legal" },
-  { label: "Industrial operations", description: "Connected tools for records, reporting, maintenance, and daily execution.", image: "https://images.unsplash.com/photo-1768128834332-7d3479c8d634?auto=format&fit=crop&w=1200&q=82", visual: "industrial" },
-  { label: "Commercial real estate", description: "Better visibility across leads, properties, leases, and portfolio activity.", image: "https://images.unsplash.com/photo-1762456415242-155132cd7ff4?auto=format&fit=crop&w=1200&q=82", visual: "property" },
+  { label: "Legal services", description: "Clearer workflows for client information, documents, and case operations.", image: "/images/industries/legal-services.png", visual: "legal" },
+  { label: "Industrial operations", description: "Connected tools for records, reporting, maintenance, and daily execution.", image: "/images/industries/industrial-operations.png", visual: "industrial" },
+  { label: "Commercial real estate", description: "Better visibility across leads, properties, leases, and portfolio activity.", image: "/images/industries/commercial-real-estate.png", visual: "property" },
 ];
 
 export const clients = [
