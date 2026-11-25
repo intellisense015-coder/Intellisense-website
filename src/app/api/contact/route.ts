@@ -37,9 +37,10 @@ function sameOrigin(request: NextRequest) {
   if (!origin) return false;
   try {
     const originUrl = new URL(origin);
-    const allowed = new Set<string>([
-      new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://intellisense.cloud").origin,
-    ]);
+    const siteOrigin = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://intellisense.cloud").origin;
+    const allowed = new Set<string>([siteOrigin]);
+    if (siteOrigin === "https://intellisense.cloud") allowed.add("https://www.intellisense.cloud");
+    if (siteOrigin === "https://www.intellisense.cloud") allowed.add("https://intellisense.cloud");
     if (process.env.NODE_ENV !== "production") {
       allowed.add("http://localhost:3000");
       allowed.add("http://127.0.0.1:3000");
