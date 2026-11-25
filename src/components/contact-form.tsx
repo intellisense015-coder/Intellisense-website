@@ -22,7 +22,10 @@ const helpOptions = [
   "Other",
 ];
 
-const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+const previewTurnstileSiteKey = "1x00000000000000000000AA";
+const turnstileSiteKey = process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+  ? previewTurnstileSiteKey
+  : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
 function validate(values: Record<string, FormDataEntryValue>): FieldErrors {
   const errors: FieldErrors = {};

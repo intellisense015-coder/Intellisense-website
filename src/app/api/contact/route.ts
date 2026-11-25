@@ -41,10 +41,13 @@ function sameOrigin(request: NextRequest) {
     const allowed = new Set<string>([siteOrigin]);
     if (siteOrigin === "https://intellisense.cloud") allowed.add("https://www.intellisense.cloud");
     if (siteOrigin === "https://www.intellisense.cloud") allowed.add("https://intellisense.cloud");
-    if (process.env.NODE_ENV !== "production") {
-      allowed.add("http://localhost:3000");
-      allowed.add("http://127.0.0.1:3000");
+    // Vercel Preview URLs are generated per deployment. NODE_ENV is still
+    // "production" there, so use Vercel's trusted runtime host variables.
+    for (const host of [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]) {
+      if (host) allowed.add(`https://${host}`);
     }
+    allowed.add("http://localhost:3000");
+    allowed.add("http://127.0.0.1:3000");
     return allowed.has(originUrl.origin);
   } catch {
     return false;
@@ -83,11 +86,15 @@ export async function POST(request: NextRequest) {
 
   let workerResponse: Response;
   try {
+    // The browser origin is checked above. The Worker receives one stable
+    // canonical origin so Preview deployment URLs never require a Worker
+    // redeploy or a new Turnstile hostname.
+    const workerOrigin = process.env.CONTACT_WORKER_ORIGIN || "https://intellisense.cloud";
     workerResponse = await fetch(`${workerUrl.replace(/\/$/, "")}/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Origin: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://intellisense.cloud").origin,
+        Origin: workerOrigin,
         "x-intellisense-worker-secret": workerSecret,
       },
       body: JSON.stringify({
