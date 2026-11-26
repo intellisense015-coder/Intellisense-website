@@ -78,6 +78,7 @@ function ProductCardFront({ product }: { product: ProductStudioItem }) {
       <span>{product.category}</span>
       <h3>{product.name}</h3>
       <ul>{product.phrases.map((phrase) => <li key={phrase.label}><span>{phrase.label}</span>{phrase.description ? <small>{phrase.description}</small> : null}</li>)}</ul>
+      <small className="product-flip-hint">Flick to see more</small>
     </div>
   </div>;
 }

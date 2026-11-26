@@ -10074,6 +10074,18 @@ body {
     padding: 24px;
 }
 
+.product-flip-hint {
+    display: block;
+    margin: 14px 0 0;
+    color: #5364c8;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    line-height: 1.2;
+    text-align: left;
+    text-transform: none;
+}
+
 @media (max-width: 1050px) {
     .product-flip-arc {
         min-height: 600px;
@@ -10986,5 +10998,11 @@ body {
 
     .product-flip-card-feature-rich .product-flip-copy li small {
         font-size: 9px;
+    }
+
+    .product-flip-copy .product-flip-hint {
+        margin-top: 15px;
+        color: #5364c8;
+        text-transform: none;
     }
 }
